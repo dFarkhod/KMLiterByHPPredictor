@@ -136,16 +136,13 @@ function convertToTensor(data) {
   function testModel(model, inputData, normalizationData) {
     const {inputMax, inputMin, labelMin, labelMax} = normalizationData;  
     
-    // Generate predictions for a uniform range of numbers between 0 and 1;
-    // We un-normalize the data by doing the inverse of the min-max scaling 
-    // that we did earlier.
+    // 0 va 1 oralig'idagi sonlardan iborat bo'lgan bashoratni bajarish
+    // Tartibga keltirilgan ma'lumotni yana betartib holatiga keltiramiz. 
+    // Buning uchun avvalgi qilngan min-max scaling amalini teskrasiga bajaramiz
     const [xs, preds] = tf.tidy(() => {
       
-       const xs = tf.linspace(0, 1, 100);      
-       const preds = model.predict(xs.reshape([100, 1]));      
-      //  const predTensor = tf.tensor2d([50, 52], [2, 1]);
-        const preds = model.predict(predTensor.reshape([2, 1]));    
-
+      const xs = tf.linspace(0, 1, 100);      
+      const preds = model.predict(xs.reshape([100, 1]));      
       const unNormXs = xs
         .mul(inputMax.sub(inputMin))
         .add(inputMin);
@@ -154,7 +151,6 @@ function convertToTensor(data) {
         .mul(labelMax.sub(labelMin))
         .add(labelMin);
       
-      // Un-normalize the data
       return [unNormXs.dataSync(), unNormPreds.dataSync()];
     });
     
