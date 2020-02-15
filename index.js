@@ -1,21 +1,4 @@
-/**
- * Mashinalar haqidagi ma'lumot saqlanuvchi json faylini bulutdan yuklab olamiz;
- * U to'plamdan bizga kerak bo'lgan joylarini ya'ni, "Miles_per_Gallon"
- * va "Horsepower" xossalarini olib, "miles per gallon"ni "kilometers per liter"ga o'giramiz;
- * Undan keyin bunday ma'lumoti yo'q bo'lgan yozuvlarni natijaviy to'plamdan 
- * o'chirib tashlaymiz.
- */
-async function getData() {
-  const carsDataRequest = await fetch('https://storage.googleapis.com/tfjs-tutorials/carsData.json');
-  const carsData = await carsDataRequest.json();
-  const cleanData = carsData.map(car => ({
-    kmpl: car.Miles_per_Gallon / 2.352,
-    horsepower: car.Horsepower,
-  }))
-    .filter(car => (car.kmpl != null && car.horsepower != null));
-
-  return cleanData;
-}
+document.addEventListener('DOMContentLoaded', run);
 
 async function run() {
   // Bo'lajak modelimizni qurishda ishlatiladigan ma'lumotni yuklab olib, 
@@ -52,7 +35,22 @@ async function run() {
   testModel(model, data, tensorData);
 }
 
-document.addEventListener('DOMContentLoaded', run);
+/* Mashinalar haqidagi ma'lumot saqlanuvchi json faylni bulutdan yuklab olamiz;
+* U to'plamdan bizga kerak bo'lgan "Miles_per_Gallon"
+* va "Horsepower" xossalarini olamiz.
+* "miles per gallon"ni "kilometers per liter"ga o'giramiz;
+* Bizga kerakli ma'lumoti yo'q bo'lgan yozuvlarni natijaviy to'plamdan o'chirib tashlaymiz.*/
+async function getData() {
+  const carsDataRequest = await fetch('https://storage.googleapis.com/tfjs-tutorials/carsData.json');
+  const carsData = await carsDataRequest.json();
+  const cleanData = carsData.map(car => ({
+    kmpl: car.Miles_per_Gallon / 2.352,
+    horsepower: car.Horsepower,
+  }))
+    .filter(car => (car.kmpl != null && car.horsepower != null));
+
+  return cleanData;
+}
 
 function createModel() {
   // Sequential (ketma-ket) modelni qurib olamiz:
@@ -140,9 +138,11 @@ function testModel(model, inputData, normalizationData) {
   // 0 va 1 oralig'idagi sonlardan iborat bo'lgan bashoratni bajarish
   // Tartibga keltirilgan ma'lumotni yana betartib holatiga keltiramiz. 
   // Buning uchun avvalgi qilngan min-max scaling amalini teskrasiga bajaramiz
+  // Modelni bashoratlashda avvalgi 300ta ma'lumotdan foydalanamiz
+  // Bashorat natijasini haqiqiy natija bilan solishtiramiz
   const [xs, preds] = tf.tidy(() => {
-    const xs = tf.linspace(0, 1, 100);
-    const preds = model.predict(xs.reshape([100, 1]));
+    const xs = tf.linspace(0, 1, 300);
+    const preds = model.predict(xs.reshape([300, 1]));
     const unNormXs = xs
       .mul(inputMax.sub(inputMin))
       .add(inputMin);
